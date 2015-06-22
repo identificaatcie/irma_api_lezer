@@ -8,7 +8,7 @@
 source /home/silvia/script/write_xml.sh
 
 issue_membership() { # $1 = thalia root attribute, $2 = PIN 
-    expiry_date=30 # TODO: Thom get expiry date from thalia database
+    expiry_date=$(./days_to_august31.sh) # TODO: Thom get expiry date from thalia database
     isMember=yes  # TODO: Thom get this from database
     isBegunstiger=no # TODO: Thom get this from database
     isHonoraryMember=no # TODO: Thom get this from database

@@ -33,7 +33,7 @@ check_issue_age() { # $1 = thalia root attribute, $2 = PIN
 get_thalia_root() {
     # TODO 
     echo retrieving student number for "$1"...
-    thalia_root="kingendummy"
+    thalia_root="kingen"
 }
 
 figlet -c "IRMA kiosk"
@@ -46,14 +46,14 @@ thalia_root="`/home/silvia/silvia/src/bin/verifier/silvia_verifier \
  -k /home/silvia/irma_configuration/Thalia/ipk.xml \
  -V /home/silvia/irma_configuration/Thalia/Verifies/rootAll/description.xml | grep userID | cut -d \| -f2`"
 
-
 if [ -n "$thalia_root" ]; then
-    echo DEBUG: verify by thalia root
+    echo "You have a valid root credential!"
     echo Please enter your 4 digit IRMA pin code
     read -s UNTRUSTED
     PIN=${UNTRUSTED//[^0-9]/} # Strip all non digits
     issue_membership "$thalia_root" "$PIN"
     check_issue_age "$thalia_root" "$PIN"
+    echo "Your credentials have been re-issued!"
 else
     echo Invalid thalia root, trying to verify by student number...
     student_number="`/home/silvia/silvia/src/bin/verifier/silvia_verifier \
@@ -73,6 +73,7 @@ else
         issue_root "$thalia_root" "$PIN"
         issue_membership "$thalia_root" "$PIN"
         check_issue_age "$thalia_root" "$PIN"
+        echo "Your credentials have been re-issued!"
     else
         echo "Invalid card! Contact identificaatcie@thalia.nu for support!"
     fi

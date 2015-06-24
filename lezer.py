@@ -38,11 +38,11 @@ except ValueError:
 
 lidtype = 'unknown'
 
-if data['membership_type'] == 'Jaarlid':
+if data['membership_type'] in ('Study Membership', 'Yearly Membership'):
     lidtype = 'member'
-elif data['membership_type'] == 'Begunstiger':
+elif data['membership_type'] == 'Benefactor':
     lidtype = 'begunstiger'
-elif data['membership_type'] == 'Erelid':
+elif data['membership_type'] == 'Honorary Member':
     lidtype = 'honoraryMember'
 
 print(data['username'], lidtype, over18)

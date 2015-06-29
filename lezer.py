@@ -4,13 +4,13 @@ from urllib import request
 import json
 from datetime import datetime
 import sys
+import secret # import api key as var KEY
 
 mode, value = sys.argv[1:3]
 
 url = (
     'http://10.0.0.1:8080/api/irma_api.php?'
-    'apikey=lie7oomaethahchu8au2lieF7pahv6ooFeeLucahnee9paej9maipheez3phaetoo0hahPooSea6aeki' # Don't commit this!
-    '&%s=%s') % (mode, value) # mode = thalia_username | student_number, value = thalia root | student number
+    'apikey=%s&%s=%s') % (secret.KEY, mode, value) # mode = thalia_username | student_number, value = thalia root | student number
 
 data = None
 

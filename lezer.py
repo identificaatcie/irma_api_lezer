@@ -8,9 +8,9 @@ import sys
 mode, value = sys.argv[1:3]
 
 url = (
-    'http://localhost:8080/api/irma_api.php?'
-    'apikey=2qTNHEm9wGYZS7o01Bpvhfw0EPe6ya2HOAR9eQl8wZoBCOSlqUvIudTKHngMH6aV'
-    '&%s=%s') % (mode, value)
+    'http://10.0.0.1:8080/api/irma_api.php?'
+    'apikey=lie7oomaethahchu8au2lieF7pahv6ooFeeLucahnee9paej9maipheez3phaetoo0hahPooSea6aeki' # Don't commit this!
+    '&%s=%s') % (mode, value) # mode = thalia_username | student_number, value = thalia root | student number
 
 data = None
 

@@ -1,4 +1,10 @@
 #!/bin/sh 
+rm -f /tmp/*.xml
+setterm -blank 0 -powerdown 0
+
+clear
+
+set -e
 
 #imports:
 # write_thalia_root , $1 = thalia root
@@ -6,15 +12,22 @@
 # write_thalia_age, $1 = yes/no (over18)
 # sets XMLDIR
 source /home/silvia/script/write_xml.sh
+APILEZER="python3 /home/silvia/script/lezer.py"
 
-issue_membership() { # $1 = thalia root attribute, $2 = PIN 
-    expiry_date=$(./days_to_august31.py) # TODO: Thom get expiry date from thalia database
-    isMember=yes  # TODO: Thom get this from database
-    isBegunstiger=no # TODO: Thom get this from database
-    isHonoraryMember=no # TODO: Thom get this from database
-    echo "Issuing Thalia membership for user, with username" "$1"
-    write_thalia_member $expiry_date $isMember $isBegunstiger $isHonoraryMember "$2" # Write the XML files
-    sudo -u issuer /opt/bin/issueWithKey.sh
+issue_membership() { # $1 = member result from website, $2 = PIN 
+    expiry_date=$(python3 /home/silvia/script/days_to_august31.py)
+    TYPE=$(echo $1 | cut -d' ' -f2)
+    isMember=$(test "$TYPE" == "member" && echo "yes" || echo "no")
+    isBegunstiger=$(test "$TYPE" == "begunstiger" && echo "yes" || echo "no")
+    isHonoraryMember=$(test "$TYPE" == "honoraryMember" && echo "yes" || echo "no")
+    if [ "$isMember" == "no" ] && [ "$isBegunstiger" == "no" ] && [ "$isHonoraryMember" == "no" ]
+    then
+	    echo "You don't seem to be a Thalia member this year, not issueing Membership..."
+    else
+	    echo "Issuing Thalia membership for user, with username" "$1"
+	    write_thalia_member $expiry_date $isMember $isBegunstiger $isHonoraryMember "$2" # Write the XML files
+	    sudo -u issuer /opt/bin/issueWithKey.sh
+    fi
 } 
 
 issue_root() { # $1 = thalia root attribute, $2 = PIN
@@ -23,17 +36,11 @@ issue_root() { # $1 = thalia root attribute, $2 = PIN
     sudo -u issuer /opt/bin/issueWithKey.sh
 }
 
-check_issue_age() { # $1 = thalia root attribute, $2 = PIN
+check_issue_age() { # $1 = member result from website, $2 = PIN
     echo "Issuing Thalia age, for user name" "$1"
-    over18=yes # TODO get this from thalia database
+    over18=$(echo $1 |cut -d ' '  -f3)
     write_thalia_age "$over18" "$2"
     sudo -u issuer /opt/bin/issueWithKey.sh
-}
-
-get_thalia_root() {
-    # TODO 
-    echo retrieving student number for "$1"...
-    thalia_root="kingen"
 }
 
 figlet -c "IRMA kiosk"
@@ -51,8 +58,9 @@ if [ -n "$thalia_root" ]; then
     echo Please enter your 4 digit IRMA pin code
     read -s UNTRUSTED
     PIN=${UNTRUSTED//[^0-9]/} # Strip all non digits
-    issue_membership "$thalia_root" "$PIN"
-    check_issue_age "$thalia_root" "$PIN"
+    MEMBER=$($APILEZER thalia_username  "$thalia_root")
+    issue_membership "$MEMBER" "$PIN"
+    check_issue_age "$MEMBER" "$PIN"
     echo "Your credentials have been re-issued!"
 else
     echo Invalid thalia root, trying to verify by student number...
@@ -62,19 +70,18 @@ else
         -V /home/silvia/irma_configuration/Surfnet/Verifies/rootAll/description.xml | grep userID | cut -d \| -f2 | cut -d \@ -f1`"
 
     if [ -n "$student_number" ]; then
-        get_thalia_root $student_number
-        if [ -z "$thalia_root" ]; then
-            echo "Invalid card! Contact identificaatcie@thalia.nu for support!"
-            exit 1
-        fi
+        MEMBER=$($APILEZER student_number "$student_number") || ( echo $MEMBER ; sleep 10; exit 1 )
+        thalia_root=$(echo $MEMBER | cut -d ' ' -f1)
         echo "Please enter your IRMA user pin code (usually 4 digits)"
+	setleds -D +num
         read -s UNTRUSTED
         PIN=${UNTRUSTED//[^0-9]/} # Strip all non-digits
         issue_root "$thalia_root" "$PIN"
-        issue_membership "$thalia_root" "$PIN"
-        check_issue_age "$thalia_root" "$PIN"
+        issue_membership "$MEMBER" "$PIN"
+        check_issue_age "$MEMBER" "$PIN"
         echo "Your credentials have been re-issued!"
     else
         echo "Invalid card! Contact identificaatcie@thalia.nu for support!"
     fi
 fi
+sleep 10

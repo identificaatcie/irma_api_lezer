@@ -5,11 +5,12 @@ import json
 from datetime import datetime
 import sys
 import secret # import api key as var KEY
+import re
 
 mode, value = sys.argv[1:3]
 
 url = (
-    'http://10.0.0.1:8080/api/irma_api.php?'
+    'https://thalia.nu/api/irma_api.php?'
     'apikey=%s&%s=%s') % (secret.KEY, mode, value) # mode = thalia_username | student_number, value = thalia root | student number
 
 data = None
@@ -25,6 +26,9 @@ if data['status'] != 'ok':
     print(data.get('message', 'unknown error') if data else 'unknown error')
     exit(1)
 
+if not re.match(r'^\w+$', data['username']):
+    raise Exception("Invalid username")
+
 now = datetime.now()
 
 over18 = False
@@ -32,7 +36,9 @@ over18 = False
 try:
     if (now.replace(year=now.year - 18)
             > datetime.strptime(data['birthday'], '%Y-%m-%d %H:%M:%S')):
-        over18 = True
+        over18 = 'yes'
+    else:
+        over18 = 'no'
 except ValueError:
     pass
 

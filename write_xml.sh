@@ -32,7 +32,7 @@ EOF
 #       $4 = yes/no (isHonoraryMember)
 #       $5 = PIN code
 function write_thalia_member {
-if ([ "$2" != "yes" ] && [ "$2" != "no"]) || ([ "$3" != "yes" ] && [ "$3" != "no" ]) || ([ "$4" != "yes" ] && [ "$4" != "no" ]) # TODO: make less ugly, use $@ or something like that
+if ([ "$2" != "yes" ] && [ "$2" != "no" ]) || ([ "$3" != "yes" ] && [ "$3" != "no" ]) || ([ "$4" != "yes" ] && [ "$4" != "no" ]) # TODO: make less ugly, use $@ or something like that
 then
     echo Invalid member type: $@ echo Expected: yes/no yes/no yes/no
     exit 1
